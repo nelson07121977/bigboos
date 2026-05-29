@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>BIG BOSS · Red Social en Tiempo Real con Firebase</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+/* ===== TODOS LOS ESTILOS ORIGINALES (mismo que en tu versión funcional) ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#030712;--s1:rgba(10,10,30,.92);--s2:rgba(18,18,45,.88);--s3:rgba(28,28,60,.85);--b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--v:#8b5cf6;--vd:rgba(139,92,246,.15);--c:#06b6d4;--r:#f43f5e;--rd:rgba(244,63,94,.15);--g:#10b981;--o:#f59e0b;--t:#f1f5f9;--m:#94a3b8;--font:'Inter',sans-serif;--font2:'Syne',sans-serif}
+html,body{height:100%;overflow:hidden;background:var(--bg)}body{font-family:var(--font);color:var(--t);position:relative}#canvasBg{position:fixed;inset:0;z-index:0;pointer-events:none}#loginScreen{position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;background:rgba(3,7,18,.96);backdrop-filter:blur(40px);padding:20px}.login-box{width:100%;max-width:440px;background:var(--s2);border:1px solid var(--b2);border-radius:32px;padding:44px 36px;text-align:center}.login-glow{width:88px;height:88px;border-radius:28px;background:linear-gradient(135deg,var(--v),var(--c));display:flex;align-items:center;justify-content:center;font-family:var(--font2);font-weight:800;font-size:28px;color:#fff;margin:0 auto 24px;animation:logoPulse 3s ease infinite}@keyframes logoPulse{0%,100%{box-shadow:0 0 60px rgba(139,92,246,.6)}50%{box-shadow:0 0 80px rgba(139,92,246,.9)}}.login-title{font-family:var(--font2);font-size:32px;font-weight:800;background:linear-gradient(135deg,#fff,rgba(139,92,246,.9));-webkit-background-clip:text;background-clip:text;color:transparent}.login-sub{font-size:13px;color:var(--m);margin-bottom:32px}.inp{width:100%;background:var(--s3);border:1px solid var(--b1);border-radius:14px;padding:14px 16px;color:var(--t);font-size:15px;outline:none;margin-bottom:12px}.inp:focus{border-color:rgba(139,92,246,.5)}.btn-primary{width:100%;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--v),var(--c));border:none;color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:all .2s;box-shadow:0 8px 32px rgba(139,92,246,.4)}.btn-primary:hover{transform:translateY(-2px)}.login-emoji-grid{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:20px 0}.emoji-pick{width:48px;height:48px;border-radius:14px;background:var(--s3);border:2px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer}.emoji-pick.chosen{border-color:var(--v);background:var(--vd)}#appShell{position:relative;z-index:10;display:flex;height:100vh;overflow:hidden}.sidebar{width:72px;height:100vh;flex-shrink:0;background:var(--s1);backdrop-filter:blur(30px);border-right:1px solid var(--b1);display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:4px;transition:width .3s;overflow:hidden}.sidebar.wide{width:230px}.sb-logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,var(--v),var(--c));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#fff;margin-bottom:20px;box-shadow:0 0 30px rgba(139,92,246,.5)}.nav-item{width:46px;height:46px;border-radius:14px;background:transparent;border:none;color:var(--m);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;position:relative}.nav-item.on{background:var(--vd);color:var(--v)}.nav-item:hover{background:var(--s3);color:var(--t)}.nav-label{position:absolute;left:60px;font-size:13px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}.sidebar.wide .nav-item{width:194px;padding:0 16px;justify-content:flex-start;gap:14px}.sidebar.wide .nav-label{position:static;opacity:1}.sb-divider{width:36px;height:1px;background:var(--b1);margin:8px 0}.sb-sp{flex:1}.sb-tog{width:46px;height:46px;border-radius:14px;background:transparent;border:none;color:var(--m);cursor:pointer;font-size:18px}#logoutSidebar{background:linear-gradient(135deg,var(--r),rgba(244,63,94,.5));color:white;margin-top:8px}.feed-col{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin}.right-col{width:300px;height:100vh;overflow-y:auto;background:var(--s1);backdrop-filter:blur(30px);border-left:1px solid var(--b1);padding:18px 14px;display:flex;flex-direction:column;gap:16px}@media(max-width:1100px){.right-col{display:none}}@media(max-width:700px){.sidebar{display:none}.feed-col{padding:12px;padding-bottom:80px}}.glass{background:var(--s2);border:1px solid var(--b1);border-radius:24px;backdrop-filter:blur(20px);padding:18px;margin-bottom:16px}.composer textarea{width:100%;background:transparent;border:none;color:var(--t);font-size:15px;resize:none;outline:none;min-height:60px}.comp-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.chip{height:32px;padding:0 14px;border-radius:999px;background:var(--s3);border:1px solid var(--b1);color:var(--m);font-size:12px;cursor:pointer}.post-btn{margin-left:auto;height:36px;padding:0 20px;border-radius:999px;background:linear-gradient(135deg,var(--v),var(--c));border:none;color:#fff;font-weight:700}.post-card{padding:16px;margin-bottom:12px;animation:fadeUp .3s ease}@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.post-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.react-btn{height:28px;padding:0 10px;border-radius:999px;background:var(--s3);border:1px solid var(--b1);color:var(--m);font-size:12px;cursor:pointer}.stories-row{display:flex;gap:10px;overflow-x:auto;margin-bottom:18px;scrollbar-width:none}.stories-row::-webkit-scrollbar{display:none}.story-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}.story-ring{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid var(--b1);background:var(--s3)}.story-ring.add-story{border-style:dashed;border-color:rgba(139,92,246,.4);color:var(--v)}.story-name{font-size:10px;color:var(--m);max-width:64px;text-align:center}.web-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:16px}.web-card{background:var(--s3);border:1px solid var(--b1);border-radius:24px;padding:18px;transition:all .2s}.web-card:hover{border-color:var(--b2);transform:translateY(-3px)}.web-icon{font-size:44px;margin-bottom:10px}.web-name{font-family:var(--font2);font-weight:700;font-size:18px}.web-buttons{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.web-btn{background:var(--vd);border:1px solid rgba(139,92,246,.35);border-radius:999px;padding:6px 14px;font-size:12px;cursor:pointer}.web-btn.primary{background:linear-gradient(135deg,var(--v),var(--c));color:white}.chat-fab{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:20px;background:linear-gradient(135deg,var(--v),var(--r));display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;z-index:50;border:none;box-shadow:0 8px 32px rgba(139,92,246,.5)}.chat-panel{position:fixed;bottom:92px;right:24px;width:375px;height:540px;background:rgba(8,8,24,.97);border:1px solid var(--b2);border-radius:24px;z-index:49;display:none;flex-direction:column;overflow:hidden}.chat-panel.open{display:flex}.chat-hdr{padding:12px 16px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center}.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}.bubble{max-width:80%;padding:8px 12px;border-radius:18px;font-size:13px}.bubble-out{background:linear-gradient(135deg,rgba(139,92,246,.45),rgba(124,58,237,.35));align-self:flex-end}.bubble-in{background:var(--s3);align-self:flex-start}.chat-inp-area{padding:10px;border-top:1px solid var(--b1);display:flex;gap:8px}.chat-inp{flex:1;background:var(--s3);border:1px solid var(--b1);border-radius:999px;padding:8px 14px;color:var(--t);outline:none}.send-btn{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--v),var(--c));border:none;color:#fff;cursor:pointer}.contact-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;cursor:pointer;transition:background .15s}.contact-item.active-chat{background:var(--vd);border-left:3px solid var(--v)}.ad-panel{background:linear-gradient(135deg, rgba(139,92,246,.2), rgba(6,182,212,.1));border:1px solid rgba(139,92,246,.4);border-radius:20px;padding:16px;position:relative}.ad-close{position:absolute;top:8px;right:12px;background:transparent;border:none;color:var(--m);font-size:18px;cursor:pointer}.donate-modal{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(12px)}.donate-modal.open{display:flex}.donate-box{width:100%;max-width:380px;background:var(--s2);border:1px solid rgba(16,185,129,.4);border-radius:32px;padding:32px;text-align:center}.donate-cbu{background:var(--s3);border-radius:12px;padding:14px;font-weight:700;margin-bottom:8px}.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:rgba(8,8,24,.97);border:1px solid var(--b2);padding:10px 22px;border-radius:999px;font-size:13px;z-index:400;opacity:0;transition:all .3s;pointer-events:none}.toast.show{opacity:1}.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,24,.97);backdrop-filter:blur(24px);border-top:1px solid var(--b1);padding:8px 0;justify-content:space-around;z-index:100}@media(max-width:700px){.mob-nav{display:flex}}.mob-btn{background:none;border:none;color:var(--m);font-size:20px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}.toggle-mob-nav{position:fixed;bottom:20px;left:20px;width:44px;height:44px;border-radius:14px;background:var(--s2);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;z-index:101}@media(min-width:701px){.toggle-mob-nav{display:none}}.offline-badge{background:var(--vd);border:1px solid rgba(139,92,246,.4);border-radius:14px;padding:10px;font-size:12px;cursor:pointer;margin-bottom:14px}.search-bar{display:flex;gap:8px;background:var(--s3);border:1px solid var(--b1);border-radius:14px;padding:10px;margin-bottom:12px}.search-bar input{flex:1;background:transparent;border:none;color:var(--t);outline:none}.search-tabs{display:flex;gap:8px;margin-bottom:12px}.search-tab{height:28px;padding:0 12px;border-radius:999px;background:transparent;border:1px solid var(--b1);color:var(--m);font-size:11px;cursor:pointer}.search-tab.on{background:var(--vd);color:var(--v)}.online-grid{display:flex;flex-wrap:wrap;gap:8px}.online-user{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:52px}.online-av{width:48px;height:48px;border-radius:15px;background:var(--s3);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:22px;position:relative}.online-dot{position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:var(--g);border:2px solid var(--s2)}.online-name{font-size:9px;color:var(--m);text-align:center}.rank-row{display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--s3);border-radius:14px;margin-bottom:5px}.panel-lbl{font-family:var(--font2);font-size:10px;color:var(--m);margin-bottom:10px;display:flex;align-items:center;gap:6px}.panel-lbl::after{content:'';flex:1;height:1px;background:var(--b1)}.follow-btn{background:linear-gradient(135deg,var(--v),var(--c));border:none;border-radius:20px;padding:4px 12px;color:#fff;font-size:10px;cursor:pointer}.follow-btn.following{background:var(--s3);color:var(--m)}.request-item{display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--s3);border-radius:12px;margin-bottom:6px}.btn-outline{background:transparent;border:1px solid var(--b1);border-radius:12px;padding:8px;color:var(--t);cursor:pointer}
+</style>
+</head>
+<body>
+<canvas id="canvasBg"></canvas>
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-glow">BB</div>
+    <div class="login-title">BIG BOSS</div>
+    <div class="login-sub">Red Social · IA · Donaciones · Tiempo real con Firebase</div>
+    <input class="inp" id="regName" placeholder="Nombre de usuario">
+    <input class="inp" id="regEmail" type="email" placeholder="Email">
+    <input class="inp" id="regPass" type="password" placeholder="Contraseña">
+    <div class="login-emoji-grid" id="emojiGrid"></div>
+    <button class="btn-primary" id="loginBtn">Registrarse / Iniciar sesión</button>
+    <div style="margin-top:14px;font-size:11px;color:var(--m2)">Datos sincronizados en la nube</div>
+  </div>
+</div>
+<div id="appShell" style="display:none">
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-logo">BB</div>
+    <button class="nav-item on" id="ni-feed" title="Inicio" onclick="goTab('feed')"><span>🏠</span><span class="nav-label">Inicio</span></button>
+    <button class="nav-item" id="ni-inbox" title="Mensajes" onclick="goTab('inbox')"><span>📬</span><span class="nav-label">Mensajes</span></button>
+    <button class="nav-item" id="ni-people" title="Gente" onclick="goTab('people')"><span>👥</span><span class="nav-label">Gente</span></button>
+    <button class="nav-item" id="ni-groups" title="Grupos" onclick="goTab('groups')"><span>👥</span><span class="nav-label">Grupos</span></button>
+    <button class="nav-item" id="ni-ranking" title="Ranking" onclick="goTab('ranking')"><span>🏆</span><span class="nav-label">Ranking</span></button>
+    <button class="nav-item" id="ni-webapps" title="Web Apps" onclick="goTab('webapps')"><span>🌐</span><span class="nav-label">Web Apps</span></button>
+    <button class="nav-item" id="ni-profile" title="Perfil" onclick="goTab('profile')"><span>👤</span><span class="nav-label">Perfil</span></button>
+    <div class="sb-divider"></div>
+    <button class="nav-item" id="settingsNavBtn" title="Ajustes" onclick="openSettingsModal()"><span>⚙️</span><span class="nav-label">Ajustes</span></button>
+    <button class="nav-item" id="logoutSidebar" title="Cerrar sesión" onclick="doLogout()"><span>🚪</span><span class="nav-label">Salir</span></button>
+    <div class="sb-sp"></div>
+    <button class="sb-tog" title="Expandir barra" onclick="toggleSidebar()">☰</button>
+  </nav>
+  <div class="feed-col" id="feedCol"></div>
+  <div class="right-col" id="rightCol"></div>
+</div>
+<div class="donate-modal" id="donateModal">
+  <div class="donate-box">
+    <div class="donate-title">💚 Apoyar al creador</div>
+    <div class="donate-cbu">1430001713008367380016</div>
+    <div>Alias: <strong>nelsoncoria.bru</strong></div>
+    <button class="post-btn" style="margin-top:16px" onclick="copyDonate()">Copiar CBU</button>
+    <button class="chip" style="margin-top:8px" onclick="closeDonate()">Cerrar</button>
+  </div>
+</div>
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" style="display:none">💬</button>
+<div class="chat-panel" id="chatPanel"></div>
+<div class="toggle-mob-nav" onclick="toggleMobNav()">☰</div>
+<nav class="mob-nav" id="mobNav">
+  <button class="mob-btn" onclick="mobGoTab('feed')">🏠<span>Inicio</span></button>
+  <button class="mob-btn" onclick="mobGoTab('inbox')">📬<span>Msjs</span></button>
+  <button class="mob-btn" onclick="mobGoTab('people')">👥<span>Gente</span></button>
+  <button class="mob-btn" onclick="mobGoTab('webapps')">🌐<span>Web</span></button>
+  <button class="mob-btn" onclick="openDonate()">💚<span>Donar</span></button>
+  <button class="mob-btn" onclick="mobGoTab('profile')">👤<span>Perfil</span></button>
+</nav>
+<div class="toast" id="toast"></div>
+<script>
+// Fondo de partículas (canvas)
+(function() {
+  const canvas = document.getElementById('canvasBg');
+  const ctx = canvas.getContext('2d');
+  let width, height, particles = [];
+  function init() {
+    width = window.innerWidth; height = window.innerHeight;
+    canvas.width = width; canvas.height = height;
+    for(let i=0;i<250;i++) particles.push({x:Math.random()*width, y:Math.random()*height, r:Math.random()*2+1, a:Math.random()*0.5+0.2, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.3});
+    animate();
+  }
+  function animate() {
+    if(!ctx) return;
+    ctx.clearRect(0,0,width,height);
+    ctx.fillStyle='#030712'; ctx.fillRect(0,0,width,height);
+    for(let p of particles) {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(139,92,246,${p.a})`; ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0) p.x=width; if(p.x>width) p.x=0;
+      if(p.y<0) p.y=height; if(p.y>height) p.y=0;
+    }
+    requestAnimationFrame(animate);
+  }
+  window.addEventListener('resize',()=>{ width=window.innerWidth; height=window.innerHeight; canvas.width=width; canvas.height=height; });
+  init();
+})();
+
+// ========== CONFIGURACIÓN DE FIREBASE ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyAe8GJiuflx18dSlIf1Gdm5TkNZKuBkt24",
+  authDomain: "big-boos-social.firebaseapp.com",
+  databaseURL: "https://big-boos-social-default-rtdb.firebaseio.com",
+  projectId: "big-boos-social",
+  storageBucket: "big-boos-social.firebasestorage.app",
+  messagingSenderId: "98119052341",
+  appId: "1:98119052341:web:d55c6f7eea6a253441d57c",
+  measurementId: "G-8W4MT25VEM"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// Referencias Firebase
+const postsRef = db.ref('posts');
+const storiesRef = db.ref('stories');
+const gruposRef = db.ref('grupos');
+const contactosRef = db.ref('contactos');
+const solicitudesRef = db.ref('solicitudes');
+const usuariosRef = db.ref('usuarios');
+const msgsRef = db.ref('mensajes');
+
+// Variables globales
+let currentUser = null;
+let profile = null;
+let posts = [], stories = [], grupos = [], contactos = [], solicitudes = [];
+let chatOpen = false, activeChat = null, curTab = 'feed', sbExpanded = false, searchMode = 'mired';
+let anonMode = false, selectedEmoji = '😊', isRecording = false;
+let adClosed = localStorage.getItem('ad_closed') === 'true';
+const ADMIN_NOMBRE = "👑 Soporte BIG BOSS";
+const ADMIN_EMOJI = "👑";
+
+function showToast(msg) { let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function esc(s) { return String(s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function ago(ts) { let d=Math.floor((Date.now()-ts)/1000); if(d<60) return'ahora'; if(d<3600) return Math.floor(d/60)+'m'; if(d<86400) return Math.floor(d/3600)+'h'; return Math.floor(d/86400)+'d'; }
+
+// Autenticación
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value.trim();
+  const nombre = document.getElementById('regName').value.trim();
+  if (!email || !pass) { showToast("Email y contraseña requeridos"); return; }
+  try {
+    let userCred = await auth.signInWithEmailAndPassword(email, pass);
+    currentUser = userCred.user;
+    let snap = await usuariosRef.child(currentUser.uid).once('value');
+    if (snap.exists()) profile = snap.val();
+    else profile = { nombre, emoji: selectedEmoji, puntos: 0 };
+    afterLogin();
+  } catch (err) {
+    if (err.code === 'auth/user-not-found') {
+      try {
+        let userCred = await auth.createUserWithEmailAndPassword(email, pass);
+        currentUser = userCred.user;
+        profile = { nombre, emoji: selectedEmoji, puntos: 0 };
+        await usuariosRef.child(currentUser.uid).set(profile);
+        afterLogin();
+      } catch(e) { showToast("Error registro: "+e.message); }
+    } else { showToast("Error: "+err.message); }
+  }
+};
+
+function afterLogin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('chatFab').style.display = 'flex';
+  loadRealtimeData();
+  renderFeed(); renderRight();
+}
+
+function loadRealtimeData() {
+  postsRef.on('value', snap => { const d=snap.val()||{}; posts=Object.entries(d).map(([id,p])=>({...p,id})); renderFeed(); });
+  storiesRef.on('value', snap => { const d=snap.val()||{}; stories=Object.entries(d).map(([id,s])=>({...s,id})); renderFeed(); });
+  gruposRef.on('value', snap => { const d=snap.val()||{}; grupos=Object.entries(d).map(([id,g])=>({...g,id})); renderGroups(); });
+  contactosRef.child(currentUser.uid).on('value', snap => { const d=snap.val()||{}; contactos=Object.values(d); renderRight(); });
+  solicitudesRef.child(currentUser.uid).on('value', snap => { const d=snap.val()||{}; solicitudes=Object.entries(d).map(([id,s])=>({...s,id})); renderInbox(); });
+}
+
+// Funciones principales
+async function publishPost(text,media,anon,poll) {
+  if(!text.trim()&&!media&&!poll) return;
+  const newPost = {
+    text, media, author: anon?'Anónimo':profile.nombre,
+    emoji: anon?'🕵️':profile.emoji, uid: anon?null:currentUser.uid,
+    ts: Date.now(), r: {like:0,laugh:0,wow:0,sad:0,angry:0}, comments: []
+  };
+  if(poll) newPost.poll = poll;
+  await postsRef.push(newPost);
+  profile.puntos += 5;
+  await usuariosRef.child(currentUser.uid).update({ puntos: profile.puntos });
+  showToast(anon?'Publicado anónimamente':'Publicado');
+}
+async function addReaction(id,type) {
+  let reactRef = postsRef.child(id).child('r').child(type);
+  let snap = await reactRef.once('value');
+  let val = (snap.val()||0)+1;
+  await reactRef.set(val);
+}
+async function addComment(id,txt) {
+  if(!txt.trim()) return;
+  let commentsRef = postsRef.child(id).child('comments');
+  let newComment = { author:profile.nombre, emoji:profile.emoji, txt, ts:Date.now() };
+  await commentsRef.push(newComment);
+}
+function deletePost(id) { postsRef.child(id).remove(); }
+async function votePoll(pid,idx) {
+  let p = posts.find(p=>p.id==pid);
+  if(p && p.poll && !p.poll.voters.includes(currentUser.uid)) {
+    let optRef = postsRef.child(pid).child('poll').child('opts').child(idx);
+    let snap = await optRef.once('value');
+    let newVotes = (snap.val()?.v||0)+1;
+    await optRef.update({ v: newVotes });
+    await postsRef.child(pid).child('poll').child('voters').push(currentUser.uid);
+  }
+}
+function makePoll() {
+  let q=prompt("Pregunta de la encuesta:");
+  if(!q) return;
+  let opts=[];
+  for(let i=1;i<=4;i++) {
+    let o=prompt(`Opción ${i} (vacío termina):`);
+    if(!o) break;
+    opts.push(o);
+  }
+  if(opts.length<2) { showToast("Mínimo 2 opciones"); return; }
+  publishPost(q,null,false,{q,opts:opts.map(o=>({t:o,v:0})),voters:[]});
+}
+async function addStory(img) {
+  await storiesRef.push({ author:profile.nombre, emoji:profile.emoji, img, ts:Date.now() });
+}
+function viewStory(idx) {
+  let s = stories[idx];
+  if(!s) return;
+  let div=document.createElement('div');
+  div.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:pointer';
+  div.innerHTML=`<div>${s.author} · ${ago(s.ts)}</div>${s.img?`<img src="${s.img}" style="max-width:90%;max-height:80vh;border-radius:24px;">`:`<div style="font-size:80px">${s.emoji}</div>`}<div>Toca para cerrar</div>`;
+  div.onclick=()=>div.remove();
+  document.body.appendChild(div);
+}
+async function createGroup() {
+  let n=prompt("Nombre del grupo");
+  if(!n) return;
+  let members=[currentUser.uid];
+  let sel=prompt("Miembros (separados por coma):\n"+contactos.map(c=>c.nombre).join(', '))||'';
+  let extra = sel.split(',').map(s=>s.trim()).filter(m=>m && contactos.some(c=>c.nombre===m));
+  // Obtener UIDs de esos nombres (simplificado, por ahora solo guardamos nombres)
+  let g = { nombre:n, creator:currentUser.uid, members, miembrosNombres:[profile.nombre, ...extra], ts:Date.now() };
+  await gruposRef.push(g);
+  showToast("Grupo creado");
+}
+function getRanking() {
+  let st={};
+  posts.forEach(p=>{
+    if(!st[p.author]) st[p.author]={nombre:p.author, emoji:p.emoji, pts:0};
+    let lk=Object.values(p.r||{}).reduce((a,b)=>a+b,0);
+    st[p.author].pts+=lk*2+1;
+  });
+  if(profile) st[profile.nombre] = {nombre:profile.nombre, emoji:profile.emoji, pts:profile.puntos};
+  return Object.values(st).sort((a,b)=>b.pts-a.pts);
+}
+function toggleAudioRec() {
+  if(!isRecording){
+    navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+      let rec=new MediaRecorder(stream);
+      rec.ondataavailable=e=>{
+        let blob=new Blob([e.data],{type:'audio/webm'});
+        let url=URL.createObjectURL(blob);
+        let a=document.createElement('a'); a.href=url; a.download='audio.webm'; a.click();
+      };
+      rec.start(); isRecording=true;
+      setTimeout(()=>{ if(rec.state==='recording') rec.stop(); isRecording=false; showToast("Nota de voz enviada"); },5000);
+      showToast("Grabando 5s...");
+    }).catch(()=>showToast("Permiso denegado"));
+  }
+}
+function startVC(chat) { showToast(`📹 Videollamada simulada con ${chat.nombre}`); }
+function toggleSidebar() { sbExpanded=!sbExpanded; document.getElementById('sidebar').classList.toggle('wide', sbExpanded); }
+function goTab(t) {
+  curTab=t;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('on'));
+  let nb=document.getElementById('ni-'+t);
+  if(nb) nb.classList.add('on');
+  if(t==='feed') renderFeed();
+  else if(t==='inbox') renderInbox();
+  else if(t==='people') renderPeople();
+  else if(t==='groups') renderGroups();
+  else if(t==='ranking') renderRanking();
+  else if(t==='webapps') renderWebApps();
+  else if(t==='profile') renderProfile();
+  renderRight();
+}
+function mobGoTab(t) { goTab(t); }
+function toggleMobNav() { document.getElementById('mobNav').classList.toggle('open'); }
+function toggleChat() { chatOpen=!chatOpen; if(!chatOpen) activeChat=null; renderChatPanel(); }
+function openChat(chat) { activeChat=chat; chatOpen=true; renderChatPanel(); }
+async function sendMsg(text) {
+  if(!text.trim()||!activeChat) return;
+  let chatId;
+  if(activeChat.type==='group') chatId = 'g_'+activeChat.id;
+  else chatId = [currentUser.uid, activeChat.uid].sort().join('_');
+  let msg = { from:currentUser.uid, fromName:profile.nombre, text, ts:Date.now() };
+  await msgsRef.child(chatId).push(msg);
+}
+function renderChatPanel() {
+  let panel=document.getElementById('chatPanel');
+  if(!chatOpen){ panel.classList.remove('open'); return; }
+  panel.classList.add('open');
+  if(!activeChat){
+    panel.innerHTML=`<div class="chat-hdr"><div>💬 Mensajes</div><button onclick="toggleChat()">✕</button></div><div class="chat-messages">Toca un contacto para chatear</div>`;
+    return;
+  }
+  let chatId = activeChat.type==='group' ? 'g_'+activeChat.id : [currentUser.uid, activeChat.uid].sort().join('_');
+  msgsRef.child(chatId).once('value', snap=>{
+    let msgsList = snap.val()||{};
+    let html = `<div class="chat-hdr"><div><strong>${activeChat.nombre}</strong></div><div><button onclick="startVC(activeChat)">📹</button><button onclick="toggleAudioRec()">🎤</button><button onclick="toggleChat()">✕</button></div></div><div class="chat-messages" id="chatMsgsArea">`+
+      Object.values(msgsList).map(m=>`<div class="bubble ${m.from===currentUser.uid?'bubble-out':'bubble-in'}"><div><strong>${m.fromName||'?'}</strong></div><div>${m.text}</div><div class="bubble-time">${new Date(m.ts).toLocaleTimeString()}</div></div>`).join('')+
+      `</div><div class="chat-inp-area"><input class="chat-inp" id="chatInp" placeholder="Mensaje..."><button class="send-btn" onclick="sendChatMsg()">➤</button></div>`;
+    panel.innerHTML=html;
+    setTimeout(()=>{ let a=document.getElementById('chatMsgsArea'); if(a) a.scrollTop=a.scrollHeight; },50);
+  });
+}
+function sendChatMsg() { let inp=document.getElementById('chatInp'); if(inp && inp.value.trim()){ sendMsg(inp.value); inp.value=''; } }
+function renderFeed() {
+  let offline=[];
+  let storiesHtml=`<div class="stories-row"><div class="story-wrap" onclick="document.getElementById('storyInp').click()"><div class="story-ring add-story">+</div><div class="story-name">Mi story</div></div>${stories.map((s,i)=>`<div class="story-wrap" onclick="viewStory(${i})"><div class="story-ring">${s.img?`<img src="${s.img}" style="width:60px;height:60px;border-radius:18px;">`:s.emoji}</div><div class="story-name">${esc(s.author)}</div></div>`).join('')}</div><input type="file" id="storyInp" accept="image/*" style="display:none" onchange="onStoryFile(this)">`;
+  let comp=`<div class="glass composer"><textarea id="ptxt" rows="2" placeholder="¿Qué estás pensando, ${esc(profile.nombre)}?"></textarea><div class="comp-actions"><button class="chip" onclick="document.getElementById('pmInp').click()">📎 Adjuntar</button><input type="file" id="pmInp" accept="image/*,video/*,audio/*" style="display:none" onchange="onPostMedia(this)"><button class="chip" onclick="makePoll()">📊 Encuesta</button><button class="chip" id="anonChip" onclick="toggleAnon()">🔒 Incógnito</button><button class="post-btn" onclick="doPost()">Publicar</button></div></div>`;
+  let searchBox=`<div class="glass"><div class="search-tabs"><button class="search-tab ${searchMode==='mired'?'on':''}" onclick="searchMode='mired';renderFeed()">BIG BOSS</button><button class="search-tab ${searchMode==='google'?'on':''}" onclick="searchMode='google';renderFeed()">Google</button></div><div class="search-bar"><input id="searchInp" placeholder="Buscar..." onkeydown="if(event.key==='Enter')doSearch()"><button onclick="doSearch()">🔍</button></div><div id="searchRes"></div></div>`;
+  let postsHtml=posts.map(p=>{
+    let emojis=['❤️','😂','😮','😢','😡']; let types=['like','laugh','wow','sad','angry'];
+    let pollHtml='';
+    if(p.poll){
+      let total=p.poll.opts.reduce((s,o)=>s+o.v,0);
+      pollHtml=`<div style="margin:10px 0;">${p.poll.opts.map((o,i)=>`<div class="poll-opt" onclick="votePoll('${p.id}',${i})"><span>${o.t}</span><span>${total?Math.round(o.v/total*100):0}% (${o.v})</span></div>`).join('')}</div>`;
+    }
+    return `<div class="glass post-card"><div><strong>${p.emoji} ${esc(p.author)}</strong> · ${ago(p.ts)}</div><div>${esc(p.text)}</div>${pollHtml}<div class="post-acts">${types.map((t,i)=>`<button class="react-btn" onclick="addReaction('${p.id}','${t}')">${emojis[i]} ${p.r[t]||0}</button>`).join('')}<button onclick="deletePost('${p.id}')">🗑️</button><button onclick="toggleComments('${p.id}')">💬 ${p.comments?.length||0}</button></div><div id="cmt-${p.id}" style="display:none; margin-top:10px;">${p.comments?.map(c=>`<div><strong>${c.author}</strong>: ${c.txt}</div>`).join('')}<input id="ci-${p.id}" placeholder="Comenta..."><button onclick="addComment('${p.id}',document.getElementById('ci-${p.id}').value)">Enviar</button></div></div>`;
+  }).join('');
+  document.getElementById('feedCol').innerHTML = storiesHtml + comp + searchBox + (postsHtml||'<div class="glass">No hay posts aún. ¡Sé el primero!</div>');
+}
+function doPost() { let txt=document.getElementById('ptxt').value; if(txt) publishPost(txt, null, anonMode, null); document.getElementById('ptxt').value=''; anonMode=false; let ac=document.getElementById('anonChip'); if(ac) ac.classList.remove('on'); }
+function onPostMedia(inp){ let f=inp.files[0]; if(f) showToast(`Archivo ${f.name} listo (demo)`); }
+function onStoryFile(inp){ let f=inp.files[0]; if(f){ let r=new FileReader(); r.onload=e=>addStory(e.target.result); r.readAsDataURL(f); } }
+function toggleAnon(){ anonMode=!anonMode; let b=document.getElementById('anonChip'); if(b) b.classList.toggle('on', anonMode); showToast(anonMode?'🔒 Modo incógnito ON':'Modo normal'); }
+function toggleComments(id){ let d=document.getElementById('cmt-'+id); if(d) d.style.display=d.style.display==='none'?'block':'none'; }
+function renderInbox() {
+  let misSolicitudes=solicitudes.filter(s=>s.estado==='pendiente');
+  let amigos=contactos;
+  let html=`<div class="glass"><h3>📬 Solicitudes</h3>${misSolicitudes.map(s=>`<div>${s.fromName} quiere seguirte <button onclick="aceptarSolicitud('${s.fromUid}')">Aceptar</button></div>`).join('')||'No hay solicitudes'}</div>`;
+  html+=`<div class="glass"><h3>💬 Chats</h3>${amigos.map(a=>`<div class="contact-item" onclick="openChat({type:'user',uid:'${a.uid}',nombre:'${a.nombre}',emoji:'👤'})">${a.nombre}</div>`).join('')||'No tienes amigos aún. Agrega gente desde "Gente".'}</div>`;
+  document.getElementById('feedCol').innerHTML = html;
+}
+function renderPeople() {
+  usuariosRef.once('value', snap=>{
+    let others = [];
+    snap.forEach(child=>{ if(child.key!==currentUser.uid) others.push({uid:child.key, ...child.val()}); });
+    let html = `<div class="glass"><h3>👥 Gente</h3>${others.map(u=>`<div><strong>${u.emoji} ${u.nombre}</strong> <button onclick="enviarSolicitud('${u.uid}','${u.nombre}')">➕ Seguir</button></div>`).join('')}</div>`;
+    document.getElementById('feedCol').innerHTML = html;
+  });
+}
+function renderGroups() {
+  let misGrupos = grupos.filter(g=>g.members.includes(currentUser.uid) || (g.miembrosNombres && g.miembrosNombres.includes(profile.nombre)));
+  let html = `<div class="glass"><h3>Crear grupo</h3><input id="gName" placeholder="Nombre"><button onclick="createGroup()">Crear</button></div><div class="glass"><h3>Mis grupos</h3>${misGrupos.map(g=>`<div onclick="openChat({type:'group',id:'${g.id}',nombre:'${g.nombre}',emoji:'👥'})">${g.nombre}</div>`).join('')||'Ninguno'}</div>`;
+  document.getElementById('feedCol').innerHTML = html;
+}
+function renderRanking() {
+  let ranking = getRanking();
+  let html = `<div class="glass"><h3>🏆 Ranking</h3>${ranking.map((r,i)=>`<div>${i+1}. ${r.emoji} ${r.nombre} - ${r.pts} pts</div>`).join('')}</div>`;
+  document.getElementById('feedCol').innerHTML = html;
+}
+function renderWebApps() {
+  let servicios=[
+    {nombre:"Google", url:"https://www.google.com", icono:"🔍"},
+    {nombre:"YouTube", url:"https://www.youtube.com", icono:"📺"},
+    {nombre:"TikTok", url:"https://www.tiktok.com", icono:"🎵"},
+    {nombre:"Facebook", url:"https://www.facebook.com", icono:"📘"},
+    {nombre:"Instagram", url:"https://www.instagram.com", icono:"📸"},
+    {nombre:"Gmail", url:"https://mail.google.com", icono:"📧"}
+  ];
+  let gridHtml=`<div class="glass"><h3>🌐 Web Apps</h3><div class="web-grid">${servicios.map(s=>`<div class="web-card"><div class="web-icon">${s.icono}</div><div class="web-name">${s.nombre}</div><button class="web-btn primary" onclick="window.open('${s.url}','_blank')">Abrir</button></div>`).join('')}</div></div>`;
+  document.getElementById('feedCol').innerHTML = gridHtml;
+}
+function renderProfile() {
+  let myP=posts.filter(p=>p.uid===currentUser.uid);
+  let myL=myP.reduce((s,p)=>s+Object.values(p.r||{}).reduce((a,b)=>a+b,0),0);
+  let html=`<div class="glass"><div style="font-size:48px;text-align:center">${profile.emoji}</div><div style="text-align:center;font-size:24px;">${esc(profile.nombre)}</div><div style="text-align:center;">⭐ ${profile.puntos} puntos</div><div style="display:flex;gap:8px;margin:16px 0;"><div style="flex:1;text-align:center;"><div>${myP.length}</div><div>Posts</div></div><div style="flex:1;text-align:center;"><div>${myL}</div><div>Likes</div></div></div><button class="post-btn" onclick="openDonate()" style="width:100%;margin-bottom:8px;">💚 Donar</button><button class="btn-outline danger" onclick="doLogout()">🚪 Cerrar sesión</button></div>`;
+  document.getElementById('feedCol').innerHTML = html;
+}
+function renderRight() {
+  let adHtml = !adClosed ? `<div class="ad-panel"><button class="ad-close" onclick="closeAd()">✕</button><strong>🤖 CLAUDE AI</strong><br>Asistente inteligente en el chat.<br><button class="chip" onclick="window.open('https://claude.ai','_blank')">Probar ahora</button></div>` : '';
+  let topUsers = getRanking().slice(0,3);
+  let topHtml = `<div class="glass"><div class="panel-lbl">🏆 TOP 3</div>${topUsers.map(u=>`<div>${u.emoji} ${u.nombre} - ${u.pts}pts</div>`).join('')}</div>`;
+  let onlineHtml = `<div class="glass"><div class="panel-lbl">🟢 EN LÍNEA</div><div>Próximamente</div></div>`;
+  document.getElementById('rightCol').innerHTML = adHtml + topHtml + onlineHtml;
+}
+function enviarSolicitud(uid, nombre) { 
+  solicitudesRef.child(uid).push({ fromUid:currentUser.uid, fromName:profile.nombre, estado:'pendiente', ts:Date.now() }); 
+  showToast(`Solicitud enviada a ${nombre}`); 
+}
+function aceptarSolicitud(fromUid) {
+  // implementación básica
+  showToast("Aceptada (demo)");
+}
+function openDonate() { document.getElementById('donateModal').classList.add('open'); }
+function closeDonate() { document.getElementById('donateModal').classList.remove('open'); }
+function copyDonate() { navigator.clipboard.writeText("1430001713008367380016"); showToast("CBU copiado"); closeDonate(); }
+function closeAd() { adClosed=true; localStorage.setItem('ad_closed','true'); renderRight(); }
+function doSearch() { let q=document.getElementById('searchInp')?.value; if(!q) return; if(searchMode==='google') window.open('https://www.google.com/search?q='+encodeURIComponent(q), '_blank'); else showToast("Búsqueda local no implementada"); }
+function doLogout() { auth.signOut().then(()=>location.reload()); }
+function openSettingsModal() { alert("Ajustes próximamente"); }
+function resetAllData() { if(confirm("¿Borrar todos los datos? (solo locales)")) localStorage.clear(); }
+
+// Inicialización emojis
+const EMOJIS=['😊','😎','🔥','⚡','🚀','🌟','💎','👑'];
+function buildEmojiGrid() { let g=document.getElementById('emojiGrid'); if(g) g.innerHTML=EMOJIS.map(e=>`<div class="emoji-pick ${e===selectedEmoji?'chosen':''}" onclick="selectedEmoji='${e}';buildEmojiGrid()">${e}</div>`).join(''); }
+buildEmojiGrid();
+
+// Exponer globales
+window.goTab=goTab; window.mobGoTab=mobGoTab; window.toggleSidebar=toggleSidebar;
+window.toggleChat=toggleChat; window.openChat=openChat; window.sendChatMsg=sendChatMsg;
+window.startVC=startVC; window.toggleAudioRec=toggleAudioRec; window.addReaction=addReaction;
+window.deletePost=deletePost; window.makePoll=makePoll; window.onPostMedia=onPostMedia;
+window.onStoryFile=onStoryFile; window.doPost=doPost; window.toggleAnon=toggleAnon;
+window.toggleComments=toggleComments; window.addComment=addComment; window.votePoll=votePoll;
+window.enviarSolicitud=enviarSolicitud; window.aceptarSolicitud=aceptarSolicitud;
+window.openDonate=openDonate; window.closeDonate=closeDonate; window.copyDonate=copyDonate;
+window.closeAd=closeAd; window.toggleMobNav=toggleMobNav; window.viewStory=viewStory;
+window.createGroup=createGroup; window.openSettingsModal=openSettingsModal; window.resetAllData=resetAllData;
+</script>
+</body>
+</html>
